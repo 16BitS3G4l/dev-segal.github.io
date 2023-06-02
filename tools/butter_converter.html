@@ -1,0 +1,248 @@
+<style>
+/*! CSS Used from: Embedded */
+div,h2,input{margin:0;padding:0;}
+.center{text-align:center;}
+h2{line-height:1.4em;margin:10px 0 0.4em 10px;font-family:"OFL Sorts Mill Goudy TT", Georgia, Times, serif;color:#000;font-weight:normal;}
+h2{font-size:1.4em;color:#006bd7;}
+.blue{color:#1633aa;}
+#leftdisplay,#rightdisplay{color:#bb5000;}
+#converter-box{text-align:center;display:inline-block;width:100%;font-size:16px;margin:0 auto 20px;background-color:#eee;border-top:1px solid #dbdbb1;padding:0;}
+#converter-box input,#converter-box select{width:99%;border-radius:5px;border:1px solid #999;font:normal 1.5em auto;padding:0.4166666666666667em;box-shadow:0 0 10px #ddd inset;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;}
+#converter-box select{resize:vertical;height:200px;}
+#converter-box input:focus,#converter-box select:focus{box-shadow:0 0 10px #9fd7ec inset;}
+#converter-box .column{width:50%;float:left;margin:0 auto 10px;}
+#converter-box .amount{width:220px;margin:0 40px 20px 10px;}
+#converter-box .precision{width:85px;}
+#converter-box .column h2,#converter-box fieldset{font:bold 1em Verdana;color:#000;display:block;margin:10px 0 3px 0;}
+#converter-box fieldset{padding:0;border:1px solid #999;min-height:130px;background-color:#fff;box-shadow:0 0 10px #ddd inset;clear:both;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;}
+#converter-box fieldset legend{text-align:left;}
+#leftbox{margin:0 auto 0;}
+@media screen and (max-width:480px){
+#converter-box{font-size:14px;}
+#converter-box .column{width:100%;float:left;}
+#converter-box .amount{width:200px;margin:0 30px 20px 5px;}
+#converter-box .precision{width:85px;margin-left:10px;}
+#converter-box .column:first-of-type{margin-right:0;}
+#converter-box select{width:98%;}
+}
+
+</style>
+
+<div id="converter-box">
+    <div class="column amount">
+    <h2>Enter Butter Amount:</h2>
+    <input type="text" size="18" id="leftinput" onkeyup="converter()">
+    </div>
+    <div class="column precision">
+    <h2>Precision:</h2>
+    <input type="text" size="3" value="2" id="rightinput" class="center" onkeyup="converter()">
+    </div>
+    <fieldset>
+    <legend>Results:</legend>
+    Amount: <div id="leftdisplay"> From unit</div>
+    Equals: <div id="rightdisplay"> To unit</div>
+    </fieldset>
+    <div class="column">
+    <h2 class="center">Choose a butter <font class="blue">From unit</font>:</h2>
+    <select id="leftbox" size="13" onchange="converter()">
+    <option selected="selected" value="0">stick of butter</option>
+    <option value="1">double stick</option>
+    <option value="2">half stick</option>
+    <option value="3">cup of butter - US</option>
+    <option value="4">cup of butter - Metric</option>
+    <option value="5">gram - g</option>
+    <option value="6">dekagram - dkg - dag</option>
+    <option value="7">kilogram - kg</option>
+    <option value="8">ounce - oz</option>
+    <option value="9">pound - lb</option>
+    <option value="10">tablespoon - Tbsp</option>
+    <option value="11">teaspoon - tsp</option>
+    </select>
+    </div>
+    <div class="column">
+    <h2 class="center">Choose a butter <font class="blue">To unit</font>:</h2>
+    <select id="rightbox" size="13" onchange="converter()">
+    <option value="0">stick of butter</option>
+    <option value="1">double stick</option>
+    <option value="2">half stick</option>
+    <option value="3">cup of butter - US</option>
+    <option value="4">cup of butter - Metric</option>
+    <option selected="selected" value="5">gram - g</option>
+    <option value="6">dekagram - dkg - dag</option>
+    <option value="7">kilogram - kg</option>
+    <option value="8">ounce - oz</option>
+    <option value="9">pound - lb</option>
+    <option value="10">tablespoon - Tbsp</option>
+    <option value="11">teaspoon - tsp</option>
+    </select>
+    </div>
+    </div>
+
+<script>
+var factors=[8.818, 4.409, 17.636, 4.4091710758377, 4.1727023, 1000, 100, 1, 35.27396194958, 2.2046226218488, 70.5467372134038, 211.6402116402116];
+if(!document.getElementById){
+  if(document.all)
+  document.getElementById=function(){
+    if(typeof document.all[arguments[0]]!="undefined")
+    return document.all[arguments[0]]
+    else
+    return null
+  }
+  else if(document.layers)
+  document.getElementById=function(){
+    if(typeof document[arguments[0]]!="undefined")
+    return document[arguments[0]]
+    else
+    return null
+  }
+}
+function converter() {
+	// Written by Jeremy Larsen, Dec. 5, 2007
+	// Get the value the user is typing (FROM)
+	fval = document.getElementById('leftinput').value;
+	// Strip spaces at beginning and end of string
+	fval = fval.replace(/^\s*/, "");
+	fval = fval.replace(/\s*$/, "");
+	// If user types a fraction
+	if (/\/+/.test(fval)) {
+		dispfval = '';
+		// Check for whole number (ex. '4 1/2') - if exists, split string (ex. '4' and '1/2')
+		if (/\d+\s+\d+/.test(fval)) {
+			basefval = fval.replace(/^(\d+)\s.*/, "$1");
+			fracfval = fval.replace(/^\d+\s+(.*)/, "$1");
+			fracfval = fracfval.replace(/\s/g, "");
+			dispfval += basefval+' ';
+		}
+		else {
+			basefval = 0;
+			fracfval = fval.replace(/\s/g, "");
+		}
+		// Get both sides of the fraction (separated by '/')
+		fracfval1 = fracfval.replace(/([^\D])\/.*/, "$1");
+		fracfval2 = fracfval.replace(/.*\/+/, "");
+		if (fracfval2 == "") newfval = "";
+			else newfval = (+basefval) + (fracfval1 / fracfval2);
+		dispfval += "<sup>"+fracfval1+"</sup>/<small>"+fracfval2+"</small>";
+	}
+	else {
+		newfval = fval.replace(/\s/g, "");
+		dispfval = newfval;
+	}
+	// Get FROM and TO select box ids
+	fsel = document.getElementById('leftbox');
+	tsel = document.getElementById('rightbox');
+	// Get FROM and TO units
+	ffactor = factors[fsel.selectedIndex];
+	tfactor = factors[tsel.selectedIndex];
+	// Calculate TO value
+	if (fsel.selectedIndex == tsel.selectedIndex) tval=newfval
+	else tval = (newfval/ffactor) * tfactor;	
+	prec = document.getElementById('rightinput').value;
+	if (/[^0-9\-]/.test(prec)) {
+		prec = prec.replace(/[^0-9\-]/, "");
+		document.getElementById('rightinput').value = prec;
+	}
+	
+	if (!isNaN(prec)) {
+		if (prec == "") prec=2;
+		if (prec >= 0) {
+			pow = Math.pow(10,prec);
+			tval = Math.round(tval*pow)/pow;
+		}
+		else if (prec < 0) {
+			precdiv = Math.pow(10,Math.abs(prec));
+			if (precdiv > tval) precdiv = Math.pow(10,Math.round(tval).toString().length - 1);
+			tval = Math.round(tval/precdiv) * precdiv;
+		}
+	}
+	// Create TO fraction. Removed <small></small> if calculating 1kg = 1kg showed very small fraction and added &nbsp;
+	if (/\/+/.test(fval) && fsel.selectedIndex == tsel.selectedIndex) {
+		disptfrac = '<br /><span style="color: #00f">'+dispfval+'</span>&nbsp; '+tsel.options[tsel.selectedIndex].text;
+	}
+	else if (Math.round(tval) != tval) {
+		tvalround = Math.round(tval*Math.pow(10,3)) / Math.pow(10,3);
+		tvalwhole = String(tvalround).split('.')[0];
+		tvalwhole = tvalwhole.replace(/(\d+)(\d{3})/, '$1 $2');
+		tvalfrac1 = parseFloat("."+String(tvalround).split('.')[1]);
+		tvalfrac2 = "1";
+		for (z=0; z<String(tvalfrac1).length-2; z++) {
+			tvalfrac2 += "0";
+		}
+		tvalfrac1 = parseInt(tvalfrac1*tvalfrac2);
+		tvalfrac2 = parseInt(tvalfrac2);
+		for (z=2; z<tvalfrac1+1; z++) {
+			if (tvalfrac1%z==0 && tvalfrac2%z==0){
+				tvalfrac1 = tvalfrac1/z;
+				tvalfrac2 = tvalfrac2/z;
+				z=2;
+			}
+		}
+		
+		// Make TO fraction as simple as possible. Added &nbsp;
+		gcd=1;
+		if (tvalfrac1>tvalfrac2) {
+			tvalfrac1=tvalfrac1+tvalfrac2;
+			tvalfrac2=tvalfrac1-tvalfrac2;
+			tvalfrac1=tvalfrac1-tvalfrac2;
+		}
+		if ((tvalfrac2==(Math.round(tvalfrac2/tvalfrac1))*tvalfrac1)) {
+			gcd=tvalfrac1;
+		}
+		else {
+			for (var i = Math.round(tvalfrac1/2) ; i > 1; i=i-1) {
+				if ((tvalfrac1==(Math.round(tvalfrac1/i))*i))
+				if ((tvalfrac2==(Math.round(tvalfrac2/i))*i)) {
+					gcd=i;
+					i=-1;
+				}
+			}
+		}
+		tvalfrac1 = tvalfrac1 / gcd;
+		tvalfrac2 = tvalfrac2 / gcd;
+		
+		disptfrac = '<br /><span style="color: #00f">'+((tvalwhole==0)?'' : tvalwhole+' ')+'<sup>'+tvalfrac1+"</sup>/<small>"+tvalfrac2+'</small></span>&nbsp; '+tsel.options[tsel.selectedIndex].text;
+	}
+	else {
+		disptfrac = '';
+	}
+	
+	if (!isNaN(tval) && !isNaN(newfval) && newfval != "") {
+		tval += '';
+		if (/\./.test(tval)) {
+			x = tval.split('.');
+			x1 = x[0];
+			x2 = x[1];
+			while (/(\d+)(\d{3})/.test(x1)) {
+				x1 = x1.replace(/(\d+)(\d{3})/, '$1 $2');
+			}
+			while (/(\d{3})(\d+)/.test(x2)) {
+				x2 = x2.replace(/(\d{3})(\d+)/, '$1 $2');
+			}
+			tval = x1 + "." + x2;
+		}
+		else {
+			while (/(\d+)(\d{3})/.test(tval)) {
+				tval = tval.replace(/(\d+)(\d{3})/, '$1 $2');
+			}
+		}
+		// Write units beneath each input box. Added &nbsp;
+		document.getElementById('leftdisplay').innerHTML = '<span style="color: #00f">'+dispfval+'</span>&nbsp; '+fsel.options[fsel.selectedIndex].text;
+		document.getElementById('rightdisplay').innerHTML = '<span style="color: #00f">'+tval+'</span>&nbsp; '+tsel.options[tsel.selectedIndex].text+disptfrac;
+	}
+	
+	// When FROM field is empty or invalid, clear fields
+	if (/[^\d\s\/\.]/.test(fval) || fval == '') {
+		document.getElementById('leftdisplay').innerHTML = fsel.options[fsel.selectedIndex].text;
+		document.getElementById('rightdisplay').innerHTML = tsel.options[tsel.selectedIndex].text;
+	}
+}
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																		
+
+
+
+
+
+
+
+
+</script>
